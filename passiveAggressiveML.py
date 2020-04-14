@@ -5,7 +5,7 @@ def getData(n):
 	mean1 = [0, 0]
 	cov1 = [[1, 0], [0, 1]]
 
-	mean2 = [1.5, 1.5]
+	mean2 = [5, 5]
 	cov2 = [[1, 0], [0, 1]]
 
 	x1, y1 = np.random.multivariate_normal(mean1, cov1, n).T
@@ -34,13 +34,13 @@ T = 100
 
 # Random permutation of data
 perm = np.random.permutation(len(y))
-reordered_x = x[perm]
-reordered_y = y[perm]
+x = x[perm]
+y = y[perm]
 
 for t in range(T):
-	x_t = reordered_x[t, :]
+	x_t = x[t, :]
 	yhat_t = np.dot(w, x_t)
-	y_t = reordered_y[t]
+	y_t = y[t]
 	l_t = max(0, 1-y_t*yhat_t)
 	T_t = l_t/(np.sum(x_t**2))
 	w = w + T_t*y_t*x_t
@@ -56,33 +56,33 @@ for t in range(T):
 			numCorrect = numCorrect + 1
 	print("Epoch {} Accuracy {}".format(t, numCorrect/len(y)))
 	colorvec1 = []
-	for j in range(n):
-		if(y[j]*yhat[j] > 0):
-			colorvec1.append('b')
-		else:
-			colorvec1.append('r')
 	colorvec2 = []
-	for j in range(n):
-		if(y[j+n]*yhat[j+n] > 0):
-			colorvec2.append('b')
+	for j in range(2*n):
+		if(y[j] < 0):
+			if(j == t):
+				colorvec1.append('g')
+			elif(y[j]*yhat[j] > 0):
+				colorvec1.append('b')
+			else:
+				colorvec1.append('r')
 		else:
-			colorvec2.append('r')
-
-	# Make this point green
-	if(perm[t]<n):
-		colorvec1[perm[t]] = 'g'
-	else:
-		colorvec2[perm[t]-n] = 'g'
+			if(j == t):
+				colorvec2.append('g')
+			elif(y[j]*yhat[j] > 0):
+				colorvec2.append('b')
+			else:
+				colorvec2.append('r')
 
 	# Calculate seperating line
-	plotx = np.array([-3, 4])
+	plotx = np.array([-10, 10])
 	ploty = (-w[2] - w[0]*plotx)/w[1]
 
 	plt.figure(dpi=300)
-	plt.scatter(x[0:n,0], x[0:n,1], s=50, marker='s', color=colorvec1)
-	plt.scatter(x[n:2*n, 0], x[n:2*n, 1], s=50, marker='X', color=colorvec2)
+	plt.scatter(x[np.squeeze(y==-1),0], x[np.squeeze(y==-1),1], s=50, marker='s', color=colorvec1)
+	plt.scatter(x[np.squeeze(y==1),0], x[np.squeeze(y==1),1], s=50, marker='X', color=colorvec2)
 	plt.plot(plotx, ploty)
-	plt.axis([-2.9, 3.9, -2.9, 3.9])
+	#plt.axis([-2.9, 3.9, -2.9, 3.9])
+	plt.axis([-2.5, 7, -2.2, 7])
 	plt.title('Iteration {}'.format(t))
 	plt.savefig('iterationOutputs/iter{}.png'.format(str(t).zfill(3)))
 	plt.close()
