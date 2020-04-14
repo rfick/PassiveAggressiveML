@@ -1,6 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def computeOptimalClassifierError(x, y, pt1, pt2):
+	numPoints = x.shape[0]
+	correctPts = 0
+	for i in range(numPoints):
+		if(y[i] < 0):
+			if(np.linalg.norm(x[i, 0:2]-pt1) < np.linalg.norm(x[i, 0:2]-pt2)):
+				correctPts = correctPts + 1
+		else:
+			if(np.linalg.norm(x[i, 0:2]-pt2) < np.linalg.norm(x[i, 0:2]-pt1)):
+				correctPts = correctPts + 1
+	return (1 - correctPts/numPoints)
+
 def getData(n):
 	mean1 = [0, 0]
 	cov1 = [[1, 0], [0, 1]]
@@ -24,14 +36,18 @@ def getData(n):
 
 n = 50
 
+np.random.seed(500)
+
 x, y = getData(n)
+
+optimalerror = computeOptimalClassifierError(x, y, [0, 0], [1.5, 1.5])*np.ones((len(y), 1))
 
 # Initial w
 w = [0, 0, 0]
 
 # From paper, 0 = PA, 1 = PA-I, 2 = PA-II
 method = 2
-C = 0.3
+C = 0.01
 
 # Number of iterations
 T = 100
@@ -40,6 +56,8 @@ T = 100
 perm = np.random.permutation(len(y))
 x = x[perm]
 y = y[perm]
+
+errorPerIteration = []
 
 for t in range(T):
 	x_t = x[t, :]
@@ -63,7 +81,10 @@ for t in range(T):
 		yhat[j] = np.dot(w, x_j)
 		if(y[j]*yhat[j] > 0):
 			numCorrect = numCorrect + 1
+
 	print("Epoch {} Accuracy {}".format(t, numCorrect/len(y)))
+	errorPerIteration.append(1-numCorrect/len(y))
+
 	colorvec1 = []
 	colorvec2 = []
 	for j in range(2*n):
@@ -95,3 +116,13 @@ for t in range(T):
 	plt.title('Iteration {}'.format(t))
 	plt.savefig('iterationOutputs/iter{}.png'.format(str(t).zfill(3)))
 	plt.close()
+
+plt.figure(dpi=300)
+plt.plot(errorPerIteration, 'b', label='PA Error')
+plt.plot(optimalerror, 'k', label='Optimal Classifer Error')
+plt.xlabel("Iteration")
+plt.ylabel("Error")
+plt.title("Test Error Over Training Time")
+plt.legend()
+plt.savefig('testerror.png')
+plt.close()
