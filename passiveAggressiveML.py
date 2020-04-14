@@ -118,7 +118,7 @@ for t in range(T):
 	plt.close()
 
 plt.figure(dpi=300)
-plt.plot(errorPerIteration, 'b', label='PA Error')
+plt.plot(errorPerIteration, 'b', label='PA-II Error')
 plt.plot(optimalerror, 'k', label='Optimal Classifer Error')
 plt.xlabel("Iteration")
 plt.ylabel("Error")
